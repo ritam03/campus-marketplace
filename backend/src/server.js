@@ -14,7 +14,7 @@ const server = http.createServer(app);
 // 2. Initialize Socket.io Server
 const io = new Server(server, {
   cors: {
-    origin: '*', // In production, replace '*' with your React app's Vercel URL
+    origin: '*', // Allows connections from your AWS IP and localhost
     methods: ['GET', 'POST']
   }
 });
@@ -26,16 +26,24 @@ app.set('io', io);
 io.on('connection', (socket) => {
   console.log(`⚡ Client connected: ${socket.id}`);
 
-  // User joins a specific chat room (Room ID could be 'listingId_buyerId_sellerId')
+  // 🌟 FIXED: Added the listener for your global notifications from App.jsx
+  socket.on('register_global', (userId) => {
+    socket.join(`global_${userId}`);
+    console.log(`User ${userId} joined global notifications channel`);
+  });
+
+  // User joins a specific chat room
   socket.on('join_chat', (roomId) => {
     socket.join(roomId);
     console.log(`User joined room: ${roomId}`);
   });
 
-  // Handle E2EE Chat Messages (Server blindly routes the encrypted payload)
+  // Handle E2EE Chat Messages
   socket.on('send_message', (data) => {
-    // data should contain { roomId, senderId, encryptedMessage }
     socket.to(data.roomId).emit('receive_message', data);
+    
+    // Optional: Also trigger a global notification to the recipient if they aren't in the chat room
+    // io.to(`global_${data.recipientId}`).emit('new_message_notification');
   });
 
   socket.on('disconnect', () => {
@@ -52,7 +60,6 @@ const startServer = async () => {
     
     console.log(`✅ Database connected successfully at ${result.rows[0].now}`);
 
-    // NOTICE: We use server.listen now, NOT app.listen
     server.listen(PORT, () => {
       console.log(`🚀 Server & WebSockets are listening on port ${PORT}`);
     });
