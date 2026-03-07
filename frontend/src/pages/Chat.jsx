@@ -9,7 +9,8 @@ import toast from 'react-hot-toast';
 const Chat = () => {
   const { listingId, otherUserId } = useParams();
   const navigate = useNavigate();
-  const { user, socket, decrementUnreadCount } = useAppStore();
+  // 🌟 FIX 1: Brought in connectSocket from the store
+  const { user, socket, connectSocket, decrementUnreadCount } = useAppStore();
   
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -42,6 +43,9 @@ const Chat = () => {
   useEffect(() => {
     if (!socket || !user) return;
 
+    // 🌟 FIX 2: Actually wake up the socket when entering the chat!
+    connectSocket();
+
     const initializeChat = async () => {
       try {
         const listingRes = await api.get(`/listings/${listingId}`);
@@ -63,8 +67,19 @@ const Chat = () => {
 
     initializeChat();
 
-    const roomId = `chat_${listingId}_${[user.id, otherUserId].sort().join('_')}`;
-    socket.emit('join_chat', roomId);
+    // 🌟 FIX 3: Force both IDs to strings before sorting to guarantee identical Room IDs
+    const roomId = `chat_${listingId}_${[user.id.toString(), otherUserId.toString()].sort().join('_')}`;
+    
+    // 🌟 FIX 4: Only join the room AFTER the socket confirms it is connected
+    const joinRoom = () => {
+      socket.emit('join_chat', roomId);
+      console.log(`Successfully joined room: ${roomId}`);
+    };
+
+    if (socket.connected) {
+      joinRoom();
+    }
+    socket.on('connect', joinRoom);
 
     const handleReceiveMessage = (data) => {
       const decryptedText = decryptMessage(data.encryptedContent);
@@ -73,15 +88,17 @@ const Chat = () => {
     };
 
     socket.on('receive_message', handleReceiveMessage);
+    
     socket.on('metrics_updated', () => {
        api.get(`/listings/${listingId}`).then(res => setListing(res.data.data.listing));
     });
 
     return () => {
+      socket.off('connect', joinRoom);
       socket.off('receive_message', handleReceiveMessage);
       socket.off('metrics_updated');
     };
-  }, [listingId, otherUserId, socket, user, decrementUnreadCount, navigate]);
+  }, [listingId, otherUserId, socket, user, decrementUnreadCount, connectSocket, navigate]);
 
   useEffect(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), [messages]);
 
@@ -95,7 +112,9 @@ const Chat = () => {
     const encryptedContent = encryptMessage(rawText);
     setMessages((prev) => [...prev, { sender_id: user.id, content: rawText, created_at: new Date().toISOString() }]);
 
-    const roomId = `chat_${listingId}_${[user.id, otherUserId].sort().join('_')}`;
+    // Use the exact same safe string-conversion for the Room ID
+    const roomId = `chat_${listingId}_${[user.id.toString(), otherUserId.toString()].sort().join('_')}`;
+    
     socket.emit('send_message', { roomId, senderId: user.id, receiverId: otherUserId, listingId, encryptedContent });
     api.post('/messages', { listingId, receiverId: otherUserId, encryptedContent }).catch(() => toast.error('Failed to save.'));
   };
@@ -105,7 +124,7 @@ const Chat = () => {
       setIsProcessingOTP(true);
       const res = await api.post('/transactions/reserve', { listingId, buyerId: otherUserId });
       setTransaction(res.data.data.transaction);
-      setListing({ ...listing, status: 'Reserved' }); // Update local status
+      setListing({ ...listing, status: 'Reserved' }); 
       toast.success('Item Reserved! OTP sent securely to buyer email.');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to reserve item.');
@@ -116,7 +135,6 @@ const Chat = () => {
     if (otpInput.length !== 6) return toast.error('OTP must be 6 digits.');
     try {
       setIsProcessingOTP(true);
-      // We pass listingId now, backend handles the rest!
       await api.post('/transactions/verify', { listingId: listing.id, otp: otpInput });
       toast.success('Handover Verified! Item marked as SOLD.');
       setListing({ ...listing, status: 'Sold' });
@@ -135,14 +153,12 @@ const Chat = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 h-[85vh] flex flex-col relative">
       
-      {/* Handover Modal Overlay */}
       {showHandoverModal && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm rounded-2xl p-4">
           <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full">
             <div className="flex justify-center mb-4"><ShieldCheck className="w-16 h-16 text-blue-600" /></div>
             <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">Secure Handover</h2>
             
-            {/* If not reserved yet, show Initiate UI. If reserved, jump straight to Verify UI */}
             {!isReserved && !transaction ? (
               <>
                 <p className="text-center text-gray-600 mb-6">You are about to reserve <b>{listing.title}</b>. This locks the item.</p>
@@ -177,7 +193,6 @@ const Chat = () => {
         </div>
       )}
 
-      {/* Header */}
       <div className="bg-white px-6 py-4 rounded-t-2xl shadow-sm border border-gray-100 flex items-center justify-between z-10">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-blue-600"><ArrowLeft className="w-6 h-6" /></button>
@@ -190,7 +205,6 @@ const Chat = () => {
           </div>
         </div>
         
-        {/* Persistent Button for Available OR Reserved items */}
         {isSeller && (isAvailable || isReserved) && (
           <button onClick={() => setShowHandoverModal(true)} className={`text-white text-sm font-bold px-4 py-2 rounded-lg transition shadow-sm flex items-center gap-2 ${isReserved ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}`}>
             <ShieldCheck className="w-4 h-4" /> {isReserved ? 'Verify Handover' : 'Secure Handover'}
@@ -198,7 +212,6 @@ const Chat = () => {
         )}
       </div>
 
-      {/* Chat History */}
       <div className="flex-1 overflow-y-auto bg-gray-50 p-6 border-x border-gray-100 flex flex-col gap-4">
         {listing.status === 'Sold' && (
           <div className="bg-green-100 border border-green-200 text-green-800 px-4 py-3 rounded-xl text-center flex items-center justify-center gap-2 shadow-sm mb-4">
@@ -220,7 +233,6 @@ const Chat = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
       <div className="bg-white p-4 rounded-b-2xl shadow-sm border border-gray-100">
         <form onSubmit={handleSendMessage} className="flex gap-2">
           <input
