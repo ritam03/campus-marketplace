@@ -1,0 +1,37 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "migrate": "node-pg-migrate -m src/migrations up",
+    "migrate:create": "node-pg-migrate -m src/migrations create"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cloudinary": "^2.9.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
+    "node-pg-migrate": "^8.0.4",
+    "nodemailer": "^8.0.1",
+    "pg": "^8.20.0",
+    "sharp": "^0.34.5",
+    "socket.io": "^4.8.3",
+    "streamifier": "^0.1.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
