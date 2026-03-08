@@ -88,7 +88,7 @@ Visual representations of system structure and flow are available in the **Image
 ![High‑Level Architecture](Images/Architecture.png)
 *Shows the primary components and their interactions.*
 
-![ER Diagram](Images/ER Diagram.png)
+![ER Diagram](Images/ERDiagram.png)
 *Database entities and relationships.*
 
 ![Sequence Diagram](Images/Sequence.png)
