@@ -1,38 +1,112 @@
 # Campus Marketplace
 
-A dedicated, real-time peer-to-peer marketplace designed specifically to provide a secure environment for buying, selling, and trading items within a campus ecosystem.
+A secure, real-time, peer‑to‑peer marketplace built exclusively for campus communities.   
+Users can buy, sell, and trade items within a closed university network while enjoying live chat, OTP‑verified handovers and campus‑restricted access.
 
-## 📖 About the Application
-Campus Marketplace solves the trust and logistical issues of standard online classifieds by restricting access to a university community. It provides a localized platform where users can easily offload textbooks, electronics, and furniture, or find campus-specific deals. The application emphasizes real-time communication, ensuring buyers and sellers can coordinate instantly through live chat and OTP based handover.
+[🔗 Live Demo](http://13.201.55.234:3000/)
 
-## ✨ Key Features
+---
 
-* **Closed-Ecosystem Authentication:** Secure user registration and login utilizing JSON Web Tokens (JWT) and Bcrypt hashing, with architectural support for strict campus ID validation.
-* **Real-Time Peer-to-Peer Chat:** A live messaging system built on WebSockets, allowing instant negotiation and coordination between buyers and sellers without refreshing the page.
-* **Dynamic Product Listings:** Users can seamlessly post, browse, and view detailed descriptions of available items within the marketplace.
-* **Centralized State Management:** Optimized data flow using Zustand to maintain a single source of truth for user sessions, socket connections, and UI states across the application.
-* **Resilient Database Architecture:** Configured with robust PostgreSQL connection pooling and timeout handling to support serverless database environments.
+## 📖 Overview
+Campus Marketplace addresses the trust and logistical challenges of generic classifieds by limiting participation to a verified campus population.  
+The platform fosters quick deals on textbooks, furniture, electronics and more while offering:
+
+* **Instant communication** via WebSocket chat
+* **Secure transactions** with OTP and JWT authentication
+* **Campus safety** through a vetted user base
+
+The application is divided into a React-based frontend and a Node/Express backend with a PostgreSQL database.  
+Connections between components are modular, documented and illustrated with architecture diagrams below.
+
+---
+
+## ✨ Detailed Features
+
+1. **User Management & Authentication**
+   * Registration/login with campus ID validation
+   * Password hashing using bcrypt
+   * Stateless JWT sessions
+2. **Listings & Marketplace**
+   * Create, read, update, delete listings
+   * Image uploads via Cloudinary integration
+   * Search and browse by category, price, recency
+3. **Real‑Time Chat**
+   * Room‑based messaging powered by Socket.io
+   * End‑to‑end encrypted payloads (handled client‑side)
+   * Global notifications for incoming messages
+4. **Transactions & OTP**
+   * Buyer–seller agreements tracked in database
+   * One‑time passwords sent via email for handover verification
+   * Status updates and audit log in transaction records
+5. **Resilient Data Layer**
+   * PostgreSQL connection pool tuned for serverless (Neon)
+   * Schema migrations managed with node‑pg‑migrate
+6. **Security & Stability**
+   * Helmet, CORS and rate‑limiting middlewares
+   * Input validation with Zod schemas
+   * Error handling and logging across controllers
+7. **Client‑Side State & UX**
+   * Central store (Zustand) for auth, socket, UI state
+   * Tailwind CSS for responsive layout
+   * Toast notifications for user feedback
+
+---
 
 ## 🛠️ Technology Stack
 
-**Frontend Architecture:**
-* **Core:** React.js, Vite
-* **Routing:** React Router DOM
-* **State Management:** Zustand
-* **Styling:** Tailwind CSS, Lucide React (Icons)
-* **User Experience:** React Hot Toast (Notifications)
-* **HTTP Client:** Axios
+### Frontend
+* **React** (v19) & **Vite**
+* **React Router DOM** for navigation
+* **Zustand** for state management
+* **Socket.io‑client** for real‑time connectivity
+* **Axios** for HTTP requests
+* **Tailwind CSS** + **Lucide React** for UI
+* **React Hot Toast** for notifications
 
-**Backend Architecture:**
-* **Server:** Node.js, Express.js
-* **Database:** PostgreSQL (Neon Serverless)
-* **Database Client:** `pg` (Node-Postgres Pool)
-* **Authentication:** JWT (JSON Web Tokens), `bcrypt`
-* **Real-Time Engine:** Socket.io
-* **Data Validation:** Zod
+### Backend
+* **Node.js** & **Express.js** (ES modules)
+* **Socket.io** for WebSocket server
+* **PostgreSQL** (Neon serverless) via `pg` pool
+* **node‑pg‑migrate** for migrations
+* **JWT** & **bcrypt** for auth
+* **Zod** for validation
+* **Cloudinary** for image hosting
+* **Nodemailer** for emails
 
-## 🔒 Security Measures
-* Passwords cryptographically hashed via `bcrypt` before database insertion.
-* Stateless authentication using JWTs securely stored on the client.
-* SSL/TLS enforced database connections (`rejectUnauthorized: false` configured for cloud database compatibility).
-* Protected backend routes utilizing custom authentication middleware.
+### Infrastructure
+* Environment variables managed with **dotenv**
+* Security headers via **Helmet**
+* File uploads handled by **Multer**
+* Rate limiting configurable with **express‑rate‑limit**
+
+---
+
+## 🧱 Architecture Diagrams
+
+Visual representations of system structure and flow are available in the **Images/** folder.
+
+![High‑Level Architecture](Images/Architecture.png)
+*Shows the primary components and their interactions.*
+
+![ER Diagram](Images/ER Diagram.png)
+*Database entities and relationships.*
+
+![Sequence Diagram](Images/Sequence.png)
+*Typical user workflows across frontend, backend and external services.*
+
+---
+
+## 🔒 Security & Best Practices
+* JWT tokens stored securely (httpOnly cookie or local storage).
+* Database connections use SSL with `rejectUnauthorized: false` for Neon.
+* Input is strictly validated at the edge using Zod schemas.
+* API endpoints are guarded by authentication middleware.
+
+---
+
+## 🚀 Live Demo
+Experience the application firsthand:
+
+**http://13.201.55.234:3000/**
+
+> The demo runs on a public IP; expect a simple login/register flow to test features.
