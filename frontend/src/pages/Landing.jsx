@@ -54,7 +54,7 @@ const Landing = () => {
                 <Users className="w-12 h-12 text-blue-600" />
               </div>
               <h3 className="text-5xl font-extrabold text-gray-900 mb-2">{stats.users}</h3>
-              <p className="text-lg text-gray-600 font-medium">Verified Campus Users</p>
+              <p className="text-lg text-gray-600 font-medium">Registered Users</p>
             </div>
             <div className="p-6 border-t md:border-t-0 md:border-l border-gray-100">
               <div className="flex justify-center mb-4">
