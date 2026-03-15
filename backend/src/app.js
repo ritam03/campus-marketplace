@@ -15,9 +15,9 @@ app.use(helmet()); // Secures HTTP headers
 // 🌟 THE FIX: Configured CORS to accept Vercel and Authorization headers
 app.use(cors({
   origin: [
-    'http://localhost:5173', // Local Vite development
-    'http://localhost:3000', 
-    'https://campus-marketplace-three.vercel.app/'
+    'http://localhost:5173', 
+    'http://localhost:3000',
+    'https://campus-marketplace-three.vercel.app' 
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
