@@ -44,27 +44,20 @@ Campus Marketplace addresses the trust and logistical challenges of generic clas
 
 ```mermaid
 graph TD
-    %% Styling
-    classDef client fill:#f9f9f9,stroke:#333,stroke-width:2px;
-    classDef network fill:#e1f5fe,stroke:#039be5,stroke-width:2px;
-    classDef api fill:#fff3e0,stroke:#fb8c00,stroke-width:2px;
-    classDef db fill:#e8f5e9,stroke:#43a047,stroke-width:2px;
-    classDef external fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px;
-
     %% Client Tier
     subgraph Client_Tier [Client Tier - Vercel Edge]
-        ReactUI[React.js UI Components]:::client
-        Zustand[Zustand Local State]:::client
-        LocalStorage[Browser Storage]:::client
+        ReactUI[React.js UI Components]
+        Zustand[Zustand Local State]
+        LocalStorage[Browser Storage]
         ReactUI <-->|Reads/Updates| Zustand
         Zustand <-->|Persists JWT & Config| LocalStorage
     end
 
     %% Edge / Network Security Tier
     subgraph Edge_Security [Network & Security Layer]
-        CORS[CORS Policy Guard]:::network
-        RateLimit[Redis Rate Limiter]:::network
-        AuthGuard[JWT Auth Middleware]:::network
+        CORS[CORS Policy Guard]
+        RateLimit[Redis Rate Limiter]
+        AuthGuard[JWT Auth Middleware]
         
         CORS -->|Validated Request| RateLimit
         RateLimit -->|If under limit| AuthGuard
@@ -72,15 +65,15 @@ graph TD
 
     %% Application Server Tier
     subgraph App_Tier [Application Server - Railway]
-        Express[Express.js Controller]:::api
-        Sockets[Socket.io WebSockets]:::api
+        Express[Express.js Controller]
+        Sockets[Socket.io WebSockets]
         
         %% Core Services
         subgraph Services [Core Business Logic]
-            AuthService[Authentication Service]:::api
-            ListingService[Listing & Feed Service]:::api
-            ChatService[Real-Time Chat Service]:::api
-            TransService[Transaction & OTP Service]:::api
+            AuthService[Authentication Service]
+            ListingService[Listing & Feed Service]
+            ChatService[Real-Time Chat Service]
+            TransService[Transaction & OTP Service]
         end
         
         Express --> AuthService
@@ -91,14 +84,14 @@ graph TD
 
     %% Data & Infrastructure Tier
     subgraph Storage_Tier [Data Persistence & Caching]
-        NeonDB[(Neon PostgreSQL Database)]:::db
-        Redis[(Redis In-Memory Cache)]:::db
+        NeonDB[(Neon PostgreSQL Database)]
+        Redis[(Redis In-Memory Cache)]
     end
 
     %% External Integrations
     subgraph Third_Party [External APIs]
-        Cloudinary[Cloudinary CDN / Image Storage]:::external
-        Nodemailer[SMTP Mail Server / OTP Delivery]:::external
+        Cloudinary[Cloudinary CDN / Image Storage]
+        Nodemailer[SMTP Mail Server / OTP Delivery]
     end
 
     %% Connecting the Tiers
@@ -109,8 +102,8 @@ graph TD
     AuthGuard --> Express
 
     %% Listing & Feed Flow
-    ListingService -- "1. Cache Check O(1)" --> Redis
-    ListingService -- "2. Cache Miss: SQL Query" --> NeonDB
+    ListingService -- "Cache Check O(1)" --> Redis
+    ListingService -- "Cache Miss: SQL Query" --> NeonDB
     ListingService -- "Uploads Images" --> Cloudinary
     
     %% Transaction Flow
