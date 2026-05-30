@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes.js';
 import listingRoutes from './routes/listingRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 
 const app = express();
 
@@ -44,5 +45,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/messages', messageRoutes);
+
+// Global Error Handler (must be the last middleware)
+app.use(errorHandler);
 
 export default app;

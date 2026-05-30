@@ -37,9 +37,9 @@ export const verifyTransaction = async (transactionId, otp) => {
   try {
     await client.query('BEGIN');
 
-    // 1. Check transaction and verify OTP
+    // 1. Check transaction and verify OTP (FOR UPDATE locks the row to prevent race conditions)
     const transRes = await client.query(
-      "SELECT * FROM transactions WHERE id = $1 AND status = 'Pending'",
+      "SELECT * FROM transactions WHERE id = $1 AND status = 'Pending' FOR UPDATE",
       [transactionId]
     );
 
