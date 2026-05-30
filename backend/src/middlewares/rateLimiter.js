@@ -1,7 +1,7 @@
 import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import redisClient from '../config/redis.js';
-import { AppError } from '../utils/AppError.js';
+import AppError from '../utils/AppError.js';
 
 // Define the rate limit rule: 100 requests per 15 minutes per IP
 const windowMs = 15 * 60 * 1000;
