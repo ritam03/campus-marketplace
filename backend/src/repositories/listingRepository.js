@@ -29,7 +29,7 @@ export const getAllListings = async (filters = {}, pagination = {}) => {
     FROM listings l
     JOIN campuses c ON l.campus_id = c.id
     JOIN users u ON l.seller_id = u.id
-    WHERE l.status = 'Available'
+    WHERE 1=1
   `;
   const values = [];
   let counter = 1;
