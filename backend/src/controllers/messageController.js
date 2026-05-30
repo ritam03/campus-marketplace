@@ -1,58 +1,34 @@
-import * as messageRepo from '../repositories/messageRepository.js';
+import * as messageService from '../services/messageService.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
-export const getHistory = async (req, res) => {
-  try {
-    const { listingId, otherUserId } = req.params;
-    const currentUserId = req.user.id;
+export const getHistory = asyncHandler(async (req, res) => {
+  const { listingId, otherUserId } = req.params;
+  const currentUserId = req.user.id;
 
-    const messages = await messageRepo.getChatHistory(listingId, currentUserId, otherUserId);
-    res.status(200).json({ status: 'success', data: { messages } });
-  } catch (error) {
-    console.error('Fetch Messages Error:', error);
-    res.status(500).json({ status: 'error', message: 'Failed to load chat history' });
-  }
-};
+  const messages = await messageService.fetchChatHistory(listingId, currentUserId, otherUserId);
+  res.status(200).json({ status: 'success', data: { messages } });
+});
 
-export const saveEncryptedMessage = async (req, res) => {
-  try {
-    const { listingId, receiverId, encryptedContent } = req.body;
-    const senderId = req.user.id;
+export const saveEncryptedMessage = asyncHandler(async (req, res) => {
+  const { listingId, receiverId, encryptedContent } = req.body;
+  const senderId = req.user.id;
 
-    const savedMessage = await messageRepo.saveMessage(listingId, senderId, receiverId, encryptedContent);
-    res.status(201).json({ status: 'success', data: { message: savedMessage } });
-  } catch (error) {
-    console.error('Save Message Error:', error);
-    res.status(500).json({ status: 'error', message: 'Failed to save message' });
-  }
-};
+  const savedMessage = await messageService.createMessage(listingId, senderId, receiverId, encryptedContent);
+  res.status(201).json({ status: 'success', data: { message: savedMessage } });
+});
 
-export const getInbox = async (req, res) => {
-  try {
-    const inbox = await messageRepo.getUserInbox(req.user.id);
-    res.status(200).json({ status: 'success', data: { inbox } });
-  } catch (error) {
-    console.error('Inbox Error:', error);
-    res.status(500).json({ status: 'error', message: 'Failed to load inbox' });
-  }
-};
+export const getInbox = asyncHandler(async (req, res) => {
+  const inbox = await messageService.fetchUserInbox(req.user.id);
+  res.status(200).json({ status: 'success', data: { inbox } });
+});
 
-export const getUnreadCount = async (req, res) => {
-  try {
-    const count = await messageRepo.getTotalUnreadCount(req.user.id);
-    res.status(200).json({ status: 'success', data: { unreadCount: count } });
-  } catch (error) {
-    console.error('Unread Count Error:', error);
-    res.status(500).json({ status: 'error', message: 'Failed to fetch unread count' });
-  }
-};
+export const getUnreadCount = asyncHandler(async (req, res) => {
+  const count = await messageService.fetchUnreadCount(req.user.id);
+  res.status(200).json({ status: 'success', data: { unreadCount: count } });
+});
 
-export const markAsRead = async (req, res) => {
-  try {
-    const { otherUserId, listingId } = req.body;
-    await messageRepo.markChatAsRead(req.user.id, otherUserId, listingId);
-    res.status(200).json({ status: 'success' });
-  } catch (error) {
-    console.error('Mark Read Error:', error);
-    res.status(500).json({ status: 'error', message: 'Failed to mark as read' });
-  }
-};
+export const markAsRead = asyncHandler(async (req, res) => {
+  const { otherUserId, listingId } = req.body;
+  await messageService.markMessagesAsRead(req.user.id, otherUserId, listingId);
+  res.status(200).json({ status: 'success' });
+});
