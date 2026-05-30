@@ -29,15 +29,10 @@ app.use(cors({
 app.use(express.json()); 
 app.use(cookieParser());
 
+import { globalLimiter } from './middlewares/rateLimiter.js';
+
 // 2. Rate Limiting (Prevents brute-force attacks)
-// Limits each IP to 100 requests per 15 minutes
-/* const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 100,
-  message: { status: 'error', message: 'Too many requests from this IP, please try again later.' }
-});
-app.use('/api', apiLimiter);
-*/
+app.use('/api', globalLimiter);
 // 3. Routes 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'success', message: 'Marketplace API is running smoothly.' });
