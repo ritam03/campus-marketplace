@@ -1,112 +1,134 @@
-# 🎓 Campus Marketplace
+# Campus Marketplace
 
 A secure, high-performance, real-time peer-to-peer marketplace built exclusively for campus communities. Users can buy, sell, and trade items within a closed university network while enjoying live chat, OTP-verified handovers, and enterprise-grade performance.
 
-[🔗 **Live Demo (Vercel)**](https://campus-marketplace-project.vercel.app/)
+[Live Demo (Vercel)](https://campus-marketplace-project.vercel.app/)
 
 ---
 
-## 🚀 Key Upgrades (Phase 1 & Phase 2)
+## Overview
 
-This project has recently undergone massive infrastructure and logic upgrades to ensure it operates at an enterprise level:
-
-*   **⚡ Redis Caching (Sub-Millisecond Latency):** Completely bypassed slow SQL database calls for the marketplace feed. Redis intercepts and serves the feed instantly, handling 1,000s of concurrent users with zero lag. Cache invalidates automatically upon item updates.
-*   **🛡️ DDoS & Brute-Force Protection:** Implemented an advanced Redis-backed rate limiter. IP addresses are globally restricted (100 req/15min) and authentication routes are heavily throttled (15 req/hour) to prevent credential stuffing.
-*   **🧠 Strict Business Logic Enforcement:** Refactored the core repositories to guarantee data integrity. Sold, Reserved, and Deleted items are strictly filtered at the database level so they never leak into the active marketplace feed.
-*   **🎨 Premium UI/UX:** Completely redesigned the frontend with modern glassmorphism, dynamic micro-animations, tailored HSL color palettes, and a highly responsive Tailwind grid layout.
-*   **🔒 State Hydration Stability:** Hardened the client-side Zustand store to gracefully handle corrupted JSON state and deeply nested authentication payloads.
+Campus Marketplace addresses the trust and logistical challenges of generic classifieds by limiting participation to a verified campus population. The platform fosters quick deals on textbooks, furniture, electronics, and more while offering instant communication, secure transactions, and a highly optimized data pipeline capable of handling high concurrent traffic.
 
 ---
 
-## 🏗️ System Architecture
+## Detailed Features
+
+**1. User Management & Authentication**
+* Registration and login restricted to campus domain users.
+* Cryptographic password hashing using bcrypt.
+* Stateless session management via JWT stored securely in httpOnly cookies.
+* Strict rate limiting to prevent brute-force and credential stuffing attacks.
+
+**2. Listings & Marketplace**
+* Full CRUD operations for marketplace listings.
+* Sub-millisecond latency on feed delivery using a Redis caching layer.
+* Advanced filtering and search capabilities (category, price range, condition).
+* Secure media handling and image uploads using Cloudinary.
+* Automated cache invalidation to ensure users always see real-time availability.
+
+**3. Real-Time Chat System**
+* Dedicated room-based messaging powered by Socket.io.
+* End-to-end encrypted (E2EE) payloads processed client-side.
+* Global WebSocket notifications for out-of-room messaging alerts.
+
+**4. Transactions & Security**
+* Buyer-seller agreements are strictly tracked and state-managed in the database.
+* One-Time Passwords (OTP) sent via Nodemailer for physical handover verification.
+* Parameterized database queries to prevent SQL injection.
+* Edge-level payload validation via Zod schemas.
+
+---
+
+## System Architecture
 
 ```mermaid
 graph TD
-    %% Frontend Layer
-    subgraph Client [Frontend (Vercel)]
-        UI[React + Tailwind CSS]
-        State[Zustand Store]
-        UI <--> State
+    subgraph Client [Frontend App - Vercel]
+        React[React UI Component Tree]
+        State[Zustand Global Store]
+        React <--> State
     end
 
-    %% Network & Edge Layer
-    subgraph Network [Security & Edge]
-        RL[Redis Rate Limiter]
-        Auth[JWT Middleware]
+    subgraph Security [Security & Edge Layer]
+        CORS[CORS Policy]
+        RateLimiter[Redis Rate Limiter]
+        Auth[JWT Authentication]
+        CORS --> RateLimiter
+        RateLimiter --> Auth
     end
 
-    %% Backend Service Layer
-    subgraph Backend [Backend Server (Railway)]
-        API[Node.js + Express API]
-        Sockets[Socket.io Server]
-        Services[Business Logic & Formatters]
-        API <--> Services
+    subgraph API [Backend Server - Railway]
+        Express[Node.js Express App]
+        WebSockets[Socket.io Server]
+        Services[Core Business Logic]
+        Express --> Services
     end
 
-    %% Data Layer
-    subgraph Storage [Data & Caching Layer]
-        Redis[(Redis In-Memory Cache)]
-        Neon[(Neon PostgreSQL DB)]
-        Cloudinary[Cloudinary Image Hosting]
+    subgraph Infrastructure [Data & Infrastructure]
+        Redis[(Redis Cache)]
+        Postgres[(Neon PostgreSQL DB)]
+        CDN[Cloudinary Media Hosting]
     end
 
-    %% Data Flow Connections
-    UI <-->|HTTP Requests| RL
-    RL <--> Auth
-    Auth <--> API
+    %% Data Flow
+    React -- HTTP REST API --> CORS
+    React -- Bi-Directional WSS --> WebSockets
+    Auth --> Express
     
-    UI <-->|WebSockets (E2EE)| Sockets
-    
-    Services <-->|1. Check Cache| Redis
-    Services <-->|2. Fallback Query| Neon
-    Services -->|Uploads| Cloudinary
+    Services -- Read / Write Cache --> Redis
+    Services -- ACID Transactions --> Postgres
+    Services -- Upload / Fetch --> CDN
 ```
 
 ---
 
-## ✨ Detailed Features
-
-1.  **User Management & Authentication**
-    *   Registration/login with campus ID validation.
-    *   Password hashing using bcrypt & Stateless JWT sessions (httpOnly cookies).
-    *   Strict rate limiting on all authentication endpoints.
-2.  **Listings & Marketplace**
-    *   Create, read, update, delete listings (CRUD).
-    *   **Redis Cached Feed:** Lightning-fast marketplace feed with automated cache invalidation.
-    *   Image uploads via Cloudinary integration with universal URL sanitization.
-    *   Advanced filtering by category, price, condition, and search terms.
-3.  **Real-Time Chat (Socket.io)**
-    *   Room-based messaging powered by Socket.io.
-    *   End-to-end encrypted (E2EE) payloads (handled client-side).
-    *   Global WebSocket notifications for incoming messages outside of rooms.
-4.  **Transactions & OTP**
-    *   Buyer-seller agreements strictly tracked in the PostgreSQL database.
-    *   One-Time Passwords (OTP) sent via Nodemailer for handover verification.
-    *   Status updates and audit logs in transaction records.
-
----
-
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Frontend
-*   **React (v19) & Vite**
-*   **Tailwind CSS** + **Lucide React** (Modern, premium UI)
-*   **Zustand** (Global state management with local storage persistence)
-*   **Socket.io-client** (Real-time communication)
-*   **Axios** & **React Hot Toast**
+* **Core:** React (v19), Vite
+* **Styling:** Tailwind CSS, UI components with dynamic glassmorphism and modern palettes
+* **State Management:** Zustand (with local storage persistence)
+* **Networking:** Axios, Socket.io-client
+* **Utilities:** React Router DOM, React Hot Toast
 
 ### Backend & Infrastructure
-*   **Node.js & Express.js**
-*   **Redis** (In-memory caching and Rate Limiting)
-*   **PostgreSQL** (Neon Serverless DB) via `pg` connection pooling
-*   **Socket.io** (WebSocket Server)
-*   **Cloudinary** (Image Storage) & **Nodemailer** (Email Services)
-*   **Security:** `helmet`, `cors`, `bcrypt`, `zod`, `express-rate-limit`, `rate-limit-redis`
+* **Runtime:** Node.js, Express.js (ES Modules)
+* **Databases:** PostgreSQL (Neon Serverless), Redis (Caching & Rate Limiting)
+* **WebSockets:** Socket.io
+* **Security:** Helmet, CORS, bcrypt, jsonwebtoken, express-rate-limit
+* **Validation:** Zod
+* **Third-Party Services:** Cloudinary (CDN), Nodemailer (SMTP)
 
 ---
 
-## 🔒 Security Posture
-*   **DDoS Mitigation:** `express-rate-limit` combined with Redis handles massive request spikes gracefully.
-*   **Injection Prevention:** Postgres parameterized queries (`$1, $2`) entirely prevent SQL injection.
-*   **Payload Validation:** Strict `Zod` schemas validate all incoming API edge requests.
-*   **Cross-Origin:** Configured CORS strictly allows only localhost and the Vercel production domain.
+## Setup & Local Development
+
+### Prerequisites
+* Node.js (v18+)
+* PostgreSQL instance
+* Redis instance (optional for local testing, fallback to memory is configured)
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/ritam03/campus-marketplace.git
+   cd campus-marketplace
+   ```
+
+2. **Backend Setup:**
+   ```bash
+   cd backend
+   npm install
+   # Configure your .env file with DATABASE_URL, REDIS_URL, CLOUDINARY details, JWT_SECRET, etc.
+   npm start
+   ```
+
+3. **Frontend Setup:**
+   ```bash
+   cd frontend
+   npm install
+   # Configure your .env with VITE_API_URL
+   npm run dev
+   ```
