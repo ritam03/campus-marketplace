@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 // import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/authRoutes.js';
 import listingRoutes from './routes/listingRoutes.js';
@@ -26,6 +27,7 @@ app.use(cors({
 }));
 
 app.use(express.json()); 
+app.use(cookieParser());
 
 // 2. Rate Limiting (Prevents brute-force attacks)
 // Limits each IP to 100 requests per 15 minutes

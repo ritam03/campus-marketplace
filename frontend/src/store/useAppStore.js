@@ -31,6 +31,10 @@ export const useAppStore = create((set) => ({
     set({ user: userData, token, isAuthenticated: true });
   },
 
+  setToken: (token) => {
+    set({ token, isAuthenticated: !!token });
+  },
+
   logout: () => {
     localStorage.removeItem('marketplace_token');
     localStorage.removeItem('marketplace_user');
