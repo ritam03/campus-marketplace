@@ -3,7 +3,7 @@
 A secure, real-time, peer‑to‑peer marketplace built exclusively for campus communities.   
 Users can buy, sell, and trade items within a closed university network while enjoying live chat, OTP‑verified handovers and campus‑restricted access.
 
-[🔗 Live Demo](http://13.201.55.234:3000/)
+[🔗 Live Demo](https://campus-marketplace-project.vercel.app/)
 
 ---
 
