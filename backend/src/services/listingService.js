@@ -61,9 +61,34 @@ export const editListing = async (listingId, sellerId, data) => {
   return updated;
 };
 
-export const fetchAllListings = async () => {
-  const listings = await listingRepo.getAllListings();
-  return listings.map(l => ({ ...l, images: formatImages(l.images) }));
+export const fetchAllListings = async (query) => {
+  const { search, minPrice, maxPrice, condition, page = 1, limit = 12 } = query;
+  
+  const offset = (page - 1) * limit;
+
+  const filters = { search, minPrice, maxPrice, condition };
+  const pagination = { limit, offset };
+
+  const listings = await listingRepo.getAllListings(filters, pagination);
+  
+  const totalCount = listings.length > 0 ? parseInt(listings[0].total_count) : 0;
+  const totalPages = Math.ceil(totalCount / limit);
+
+  // Remove the total_count property from each row before sending to frontend
+  const formattedListings = listings.map(l => {
+    const { total_count, ...rest } = l;
+    return { ...rest, images: formatImages(rest.images) };
+  });
+
+  return {
+    listings: formattedListings,
+    meta: {
+      totalCount,
+      totalPages,
+      currentPage: parseInt(page),
+      limit: parseInt(limit)
+    }
+  };
 };
 
 export const fetchListingById = async (id) => {

@@ -15,8 +15,11 @@ export const editListing = asyncHandler(async (req, res) => {
 });
 
 export const fetchListings = asyncHandler(async (req, res) => {
-  const listings = await listingService.fetchAllListings();
-  res.status(200).json({ status: 'success', data: { listings } });
+  const result = await listingService.fetchAllListings(req.query);
+  res.status(200).json({ 
+    status: 'success', 
+    data: { listings: result.listings, meta: result.meta } 
+  });
 });
 
 export const fetchSingleListing = asyncHandler(async (req, res) => {

@@ -19,15 +19,46 @@ export const createListing = async ({ sellerId, title, price, condition, descrip
   return result.rows[0];
 };
 
-// 2. Fetch all active listings for the feed
-export const getAllListings = async () => {
-  const result = await pool.query(
-    `SELECT l.*, c.name as campus_name, u.name as seller_name 
-     FROM listings l
-     JOIN campuses c ON l.campus_id = c.id
-     JOIN users u ON l.seller_id = u.id
-     ORDER BY l.created_at DESC`
-  );
+// 2. Fetch all active listings for the feed with Filters & Pagination
+export const getAllListings = async (filters = {}, pagination = {}) => {
+  const { search, minPrice, maxPrice, condition } = filters;
+  const { limit = 12, offset = 0 } = pagination;
+
+  let query = `
+    SELECT l.*, c.name as campus_name, u.name as seller_name, count(*) OVER() as total_count 
+    FROM listings l
+    JOIN campuses c ON l.campus_id = c.id
+    JOIN users u ON l.seller_id = u.id
+    WHERE l.status = 'Available'
+  `;
+  const values = [];
+  let counter = 1;
+
+  if (search) {
+    query += ` AND (l.title ILIKE $${counter} OR l.description ILIKE $${counter})`;
+    values.push(`%${search}%`);
+    counter++;
+  }
+  if (minPrice) {
+    query += ` AND l.price >= $${counter}`;
+    values.push(minPrice);
+    counter++;
+  }
+  if (maxPrice) {
+    query += ` AND l.price <= $${counter}`;
+    values.push(maxPrice);
+    counter++;
+  }
+  if (condition) {
+    query += ` AND l.condition = $${counter}`;
+    values.push(condition);
+    counter++;
+  }
+
+  query += ` ORDER BY l.created_at DESC LIMIT $${counter} OFFSET $${counter + 1}`;
+  values.push(limit, offset);
+
+  const result = await pool.query(query, values);
   return result.rows;
 };
 
