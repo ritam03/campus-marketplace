@@ -1,6 +1,6 @@
 # Campus Marketplace
 
-A secure, high-performance, real-time peer-to-peer marketplace built exclusively for campus communities. Users can buy, sell, and trade items within a closed university network while enjoying live chat, OTP-verified handovers, and enterprise-grade performance.
+A secure, high-performance, real-time peer-to-peer marketplace built for campus communities. Users can buy, sell, and trade items within their university network while enjoying live chat, OTP-verified handovers, and enterprise-grade performance.
 
 [Live Demo (Vercel)](https://campus-marketplace-project.vercel.app/)
 
@@ -8,14 +8,14 @@ A secure, high-performance, real-time peer-to-peer marketplace built exclusively
 
 ## Overview
 
-Campus Marketplace addresses the trust and logistical challenges of generic classifieds by limiting participation to a verified campus population. The platform fosters quick deals on textbooks, furniture, electronics, and more while offering instant communication, secure transactions, and a highly optimized data pipeline capable of handling high concurrent traffic.
+Campus Marketplace addresses the trust and logistical challenges of generic classifieds by tailoring the experience for university students. The platform allows users to self-identify their campus and fosters quick deals on textbooks, furniture, electronics, and more while offering instant communication, secure transactions, and a highly optimized data pipeline capable of handling high concurrent traffic.
 
 ---
 
 ## Detailed Features
 
 **1. User Management & Authentication**
-* Registration and login restricted to campus domain users.
+* Flexible registration allowing users to self-identify their campus affiliation.
 * Cryptographic password hashing using bcrypt.
 * Stateless session management via JWT stored securely in httpOnly cookies.
 * Strict rate limiting to prevent brute-force and credential stuffing attacks.
@@ -44,41 +44,84 @@ Campus Marketplace addresses the trust and logistical challenges of generic clas
 
 ```mermaid
 graph TD
-    subgraph Client [Frontend App - Vercel]
-        React[React UI Component Tree]
-        State[Zustand Global Store]
-        React <--> State
+    %% Styling
+    classDef client fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef network fill:#e1f5fe,stroke:#039be5,stroke-width:2px;
+    classDef api fill:#fff3e0,stroke:#fb8c00,stroke-width:2px;
+    classDef db fill:#e8f5e9,stroke:#43a047,stroke-width:2px;
+    classDef external fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px;
+
+    %% Client Tier
+    subgraph Client_Tier [Client Tier - Vercel Edge]
+        ReactUI[React.js UI Components]:::client
+        Zustand[Zustand Local State]:::client
+        LocalStorage[Browser Storage]:::client
+        ReactUI <-->|Reads/Updates| Zustand
+        Zustand <-->|Persists JWT & Config| LocalStorage
     end
 
-    subgraph Security [Security & Edge Layer]
-        CORS[CORS Policy]
-        RateLimiter[Redis Rate Limiter]
-        Auth[JWT Authentication]
-        CORS --> RateLimiter
-        RateLimiter --> Auth
+    %% Edge / Network Security Tier
+    subgraph Edge_Security [Network & Security Layer]
+        CORS[CORS Policy Guard]:::network
+        RateLimit[Redis Rate Limiter]:::network
+        AuthGuard[JWT Auth Middleware]:::network
+        
+        CORS -->|Validated Request| RateLimit
+        RateLimit -->|If under limit| AuthGuard
     end
 
-    subgraph API [Backend Server - Railway]
-        Express[Node.js Express App]
-        WebSockets[Socket.io Server]
-        Services[Core Business Logic]
-        Express --> Services
+    %% Application Server Tier
+    subgraph App_Tier [Application Server - Railway]
+        Express[Express.js Controller]:::api
+        Sockets[Socket.io WebSockets]:::api
+        
+        %% Core Services
+        subgraph Services [Core Business Logic]
+            AuthService[Authentication Service]:::api
+            ListingService[Listing & Feed Service]:::api
+            ChatService[Real-Time Chat Service]:::api
+            TransService[Transaction & OTP Service]:::api
+        end
+        
+        Express --> AuthService
+        Express --> ListingService
+        Express --> TransService
+        Sockets <--> ChatService
     end
 
-    subgraph Infrastructure [Data & Infrastructure]
-        Redis[(Redis Cache)]
-        Postgres[(Neon PostgreSQL DB)]
-        CDN[Cloudinary Media Hosting]
+    %% Data & Infrastructure Tier
+    subgraph Storage_Tier [Data Persistence & Caching]
+        NeonDB[(Neon PostgreSQL Database)]:::db
+        Redis[(Redis In-Memory Cache)]:::db
     end
 
-    %% Data Flow
-    React -- HTTP REST API --> CORS
-    React -- Bi-Directional WSS --> WebSockets
-    Auth --> Express
+    %% External Integrations
+    subgraph Third_Party [External APIs]
+        Cloudinary[Cloudinary CDN / Image Storage]:::external
+        Nodemailer[SMTP Mail Server / OTP Delivery]:::external
+    end
+
+    %% Connecting the Tiers
+    ReactUI -- "HTTP REST (JSON)" --> CORS
+    ReactUI <== "Bi-Directional WSS" ==> Sockets
+
+    %% Internal Data Flow
+    AuthGuard --> Express
+
+    %% Listing & Feed Flow
+    ListingService -- "1. Cache Check O(1)" --> Redis
+    ListingService -- "2. Cache Miss: SQL Query" --> NeonDB
+    ListingService -- "Uploads Images" --> Cloudinary
     
-    Services -- Read / Write Cache --> Redis
-    Services -- ACID Transactions --> Postgres
-    Services -- Upload / Fetch --> CDN
+    %% Transaction Flow
+    TransService -- "SQL ACID Tx" --> NeonDB
+    TransService -- "Sends OTP" --> Nodemailer
+    
+    %% Auth Flow
+    AuthService -- "Validates User" --> NeonDB
+    
+    %% Chat Flow
+    ChatService -- "Persists History" --> NeonDB
 ```
 
 ---
