@@ -130,11 +130,6 @@ useEffect(() => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {myItems.map(item => (
             <div key={item.id} className="border border-gray-100 rounded-lg p-4 flex gap-4 hover:shadow-md transition bg-white relative">
-              
-              {item.status === 'Sold' && (
-                <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow-sm z-10">SOLD</div>
-              )}
-
               <img src={item.images?.[0] || 'https://via.placeholder.com/150'} alt={item.title} className="w-24 h-24 object-cover rounded-md border border-gray-200" />
               <div className="flex-1 flex flex-col">
                 <h3 className="font-bold text-gray-900 line-clamp-1" title={item.title}>{item.title}</h3>
@@ -143,7 +138,6 @@ useEffect(() => {
                 <div className="flex gap-2 mt-2">
                   <button 
                     onClick={() => openEditModal(item)}
-                    disabled={item.status === 'Sold'}
                     className="flex-1 flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-1.5 rounded-md text-sm font-medium transition disabled:opacity-50"
                   >
                     <Edit className="w-4 h-4"/> Edit

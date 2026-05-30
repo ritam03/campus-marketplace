@@ -34,11 +34,8 @@ export const getAllListings = async (filters = {}, pagination = {}) => {
   const values = [];
   let counter = 1;
 
-  // If we are NOT specifically querying a seller's listings, only show available.
-  // If a seller is viewing their own listings, we want to show all statuses (Available, Sold, Reserved).
-  if (!sellerId) {
-    query += ` AND l.status = 'Available'`;
-  }
+  // Strictly enforce the rule: Only show 'Available' items everywhere (Marketplace & My Listings)
+  query += ` AND l.status = 'Available'`;
 
   if (sellerId) {
     query += ` AND l.seller_id = $${counter}`;
