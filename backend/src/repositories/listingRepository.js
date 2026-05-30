@@ -21,7 +21,7 @@ export const createListing = async ({ sellerId, title, price, condition, descrip
 
 // 2. Fetch all active listings for the feed with Filters & Pagination
 export const getAllListings = async (filters = {}, pagination = {}) => {
-  const { search, minPrice, maxPrice, condition } = filters;
+  const { search, minPrice, maxPrice, condition, sellerId } = filters;
   const { limit = 12, offset = 0 } = pagination;
 
   let query = `
@@ -29,15 +29,27 @@ export const getAllListings = async (filters = {}, pagination = {}) => {
     FROM listings l
     JOIN campuses c ON l.campus_id = c.id
     JOIN users u ON l.seller_id = u.id
-    WHERE l.status = 'Available'
+    WHERE 1=1
   `;
   const values = [];
   let counter = 1;
 
-  if (search) {
-    query += ` AND (l.title ILIKE $${counter} OR l.description ILIKE $${counter})`;
-    values.push(`%${search}%`);
+  // If we are NOT specifically querying a seller's listings, only show available.
+  // If a seller is viewing their own listings, we want to show all statuses (Available, Sold, Reserved).
+  if (!sellerId) {
+    query += ` AND l.status = 'Available'`;
+  }
+
+  if (sellerId) {
+    query += ` AND l.seller_id = $${counter}`;
+    values.push(sellerId);
     counter++;
+  }
+
+  if (search) {
+    query += ` AND (l.title ILIKE $${counter} OR l.description ILIKE $${counter + 1})`;
+    values.push(`%${search}%`, `%${search}%`);
+    counter += 2;
   }
   if (minPrice) {
     query += ` AND l.price >= $${counter}`;

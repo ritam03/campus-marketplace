@@ -62,11 +62,11 @@ export const editListing = async (listingId, sellerId, data) => {
 };
 
 export const fetchAllListings = async (query) => {
-  const { search, minPrice, maxPrice, condition, page = 1, limit = 12 } = query;
+  const { search, minPrice, maxPrice, condition, sellerId, page = 1, limit = 12 } = query;
   
   const offset = (page - 1) * limit;
 
-  const filters = { search, minPrice, maxPrice, condition };
+  const filters = { search, minPrice, maxPrice, condition, sellerId };
   const pagination = { limit, offset };
 
   const listings = await listingRepo.getAllListings(filters, pagination);

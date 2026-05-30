@@ -13,7 +13,10 @@ const socket = io(SOCKET_URL, {
 const getSavedUser = () => {
   try {
     const saved = localStorage.getItem('marketplace_user');
-    return saved ? JSON.parse(saved) : null;
+    if (!saved || saved === 'undefined' || saved === 'null') return null;
+    const parsed = JSON.parse(saved);
+    if (!parsed || Object.keys(parsed).length === 0) return null;
+    return parsed;
   } catch {
     return null;
   }
@@ -22,8 +25,8 @@ const getSavedUser = () => {
 export const useAppStore = create((set) => ({
   // --- Auth State ---
   user: getSavedUser(),
-  token: localStorage.getItem('marketplace_token') || null,
-  isAuthenticated: !!localStorage.getItem('marketplace_token'),
+  token: getSavedUser() ? localStorage.getItem('marketplace_token') : null,
+  isAuthenticated: !!getSavedUser() && !!localStorage.getItem('marketplace_token'),
 
   login: (userData, token) => {
     localStorage.setItem('marketplace_token', token);

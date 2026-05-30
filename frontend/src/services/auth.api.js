@@ -3,12 +3,12 @@ import api from './api';
 export const authApi = {
   login: async (credentials) => {
     const response = await api.post('/auth/login', credentials);
-    return response.data; // { status, token, data: { user } }
+    return { token: response.data.token, user: response.data.data.user };
   },
 
   register: async (userData) => {
     const response = await api.post('/auth/register', userData);
-    return response.data;
+    return { token: response.data.token, user: response.data.data.user };
   },
 
   updateProfile: async (userData) => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { listingApi } from '../../services/listing.api';
 import { useAppStore } from '../../store/useAppStore';
 import { Loader2, Tag, Edit, Trash2, X, UploadCloud, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -19,14 +20,8 @@ const MyListings = () => {
 useEffect(() => {
     const fetchMyListings = async () => {
       try {
-        const response = await api.get('/listings');
-        
-        // Filter: Must be your item AND must NOT be sold
-        const filtered = response.data.data.listings.filter(
-          item => item.seller_id === user.id && item.status === 'Available'
-        );
-        
-        setMyItems(filtered);
+        const { listings } = await listingApi.getAllListings({ sellerId: user.id, limit: 100 });
+        setMyItems(listings);
       } catch (error) {
         toast.error('Failed to load your listings.');
       } finally {
