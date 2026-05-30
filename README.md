@@ -101,12 +101,3 @@ Visual representations of system structure and flow are available in the **Image
 * Database connections use SSL with `rejectUnauthorized: false` for Neon.
 * Input is strictly validated at the edge using Zod schemas.
 * API endpoints are guarded by authentication middleware.
-
----
-
-## 🚀 Live Demo
-Experience the application firsthand:
-
-**http://13.201.55.234:3000/**
-
-> The demo runs on a public IP; expect a simple login/register flow to test features.
